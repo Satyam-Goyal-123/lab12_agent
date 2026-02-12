@@ -1,42 +1,23 @@
-# 💱 Currency & Stock Market Agent (Streamlit + LLM)
+# 🤖 Lab 12 – LLM Agent Development (Streamlit)
 
-## 📌 Project Overview
-
-This project is a Streamlit-based LLM agent developed for Lab 12 – Agent Development.
-
-The application retrieves:
-
-- Official currency of a country
-- Real-time exchange rates
-- Major stock market index
-- Latest index value
-- Google Maps link for stock exchange HQ
+This repository contains two Streamlit-based LLM agents developed for **Lab 12 – Agent Development using MCP / LLM Tools**.
 
 ---
 
-## 🚀 Features
+## 🚀 Agents Included
 
-✅ Currency detection using LLM  
-✅ Live exchange rates  
-✅ Stock index lookup  
-✅ Streamlit UI  
-✅ Secrets-safe deployment  
+### ✈️ 1. Trip Planner Agent
 
----
+An LLM-powered travel assistant that helps users plan trips.
 
-## 🛠️ Tech Stack
+**Features**
 
-- Python
-- Streamlit
-- OpenRouter (LLM)
-- ExchangeRate API
-- Yahoo Finance (yfinance)
+- City overview & cultural significance
+- Weather information
+- Trip suggestions
+- Interactive UI
 
----
-
-## 📦 Installation
+**Run Locally**
 
 ```bash
-git clone https://github.com/Satyam-Goyal-123/lab12_agent.git
-cd lab12_agent
-pip install -r requirements.txt
+streamlit run app.py
