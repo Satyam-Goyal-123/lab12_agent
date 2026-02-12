@@ -21,6 +21,10 @@ def ask_llm(prompt):
     )
 
     data = response.json()
+
+    if "choices" not in data:
+        return f"API Error: {data}"
+
     return data['choices'][0]['message']['content']
 
 def get_weather(city):
