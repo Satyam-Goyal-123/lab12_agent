@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import os
 
-OPENROUTER_KEY = "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"
+OPENROUTER_KEY = st.secrets["OPENROUTER_KEY"]
 OPENWEATHER_KEY = os.getenv("OPENWEATHER_API_KEY")
 
 def ask_llm(prompt):
