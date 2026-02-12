@@ -2,12 +2,20 @@ import streamlit as st
 import requests
 import yfinance as yf
 
-# Load secrets (works locally + Streamlit Cloud)
+# ---------- CONFIG ----------
+st.set_page_config(
+    page_title="Currency & Stock Agent",
+    page_icon="💱",
+    layout="centered"
+)
+
+# ---------- SECRETS ----------
 OPENROUTER_KEY = st.secrets["OPENROUTER_KEY"]
 EXCHANGE_KEY = st.secrets["EXCHANGE_API_KEY"]
 
 # ---------- LLM CALL ----------
 def ask_llm(prompt):
+
     response = requests.post(
         url="https://openrouter.ai/api/v1/chat/completions",
         headers={
@@ -33,6 +41,7 @@ def ask_llm(prompt):
 
 # ---------- EXCHANGE RATES ----------
 def get_exchange_rates(currency_code):
+
     url = f"https://v6.exchangerate-api.com/v6/{EXCHANGE_KEY}/latest/{currency_code}"
     response = requests.get(url)
 
@@ -56,36 +65,41 @@ def get_exchange_rates(currency_code):
 
 # ---------- STOCK INDICES ----------
 def get_stock_index(country):
+
     mapping = {
-        "japan": "^N225",
-        "india": "^BSESN",
-        "us": "^GSPC",
+        "japan": "^N225",          # Nikkei 225
+        "india": "^BSESN",         # Sensex
+        "us": "^GSPC",             # S&P 500
         "united states": "^GSPC",
-        "uk": "^FTSE",
+        "uk": "^FTSE",             # FTSE 100
         "united kingdom": "^FTSE",
-        "china": "000001.SS",
-        "south korea": "^KS11"
+        "china": "000001.SS",      # Shanghai Composite
+        "south korea": "^KS11"     # KOSPI
     }
 
     ticker = mapping.get(country.lower())
 
     if not ticker:
-        return "Stock index not mapped"
+        return "Stock index not mapped for this country"
 
-    data = yf.Ticker(ticker).history(period="1d")
+    try:
+        data = yf.Ticker(ticker).history(period="1d")
 
-    if data.empty:
-        return "No market data available"
+        if data.empty:
+            return "No market data available"
 
-    return f"{ticker} Latest Close: {round(data['Close'].iloc[-1], 2)}"
+        value = round(data['Close'].iloc[-1], 2)
+
+        return f"{ticker} Latest Close: {value}"
+
+    except Exception:
+        return "Live market data temporarily unavailable (Yahoo Finance rate limit)"
 
 
 # ---------- UI ----------
-st.set_page_config(page_title="Currency & Stock Agent", page_icon="💱")
-
 st.title("💱 Currency & Stock Market Agent")
 
-st.write("Enter a country to get its currency, exchange rates, and stock market details.")
+st.write("Enter a country to retrieve its official currency, exchange rates, and major stock index.")
 
 country = st.text_input("🌍 Enter Country Name")
 
@@ -94,26 +108,30 @@ if st.button("Get Details"):
     if not country:
         st.warning("Please enter a country name")
     else:
+
         with st.spinner("Fetching financial data..."):
 
+            # ---- Currency ----
             currency_info = ask_llm(
                 f"What is the official currency of {country}? "
-                f"Return in format: Currency Name (CODE)"
+                f"Return ONLY in format: Currency Name (CODE)"
             )
 
             if not currency_info:
-                st.error("Failed to fetch currency information")
+                st.error("Unable to fetch currency details")
             else:
                 st.subheader(f"🏦 Official Currency of {country}")
                 st.success(currency_info)
 
                 currency_code = "USD"
+
                 if "(" in currency_info and ")" in currency_info:
                     currency_code = currency_info.split("(")[-1].split(")")[0].strip()
 
-                rates = get_exchange_rates(currency_code)
-
+                # ---- Exchange Rates ----
                 st.subheader("💱 Exchange Rates")
+
+                rates = get_exchange_rates(currency_code)
 
                 if rates:
                     col1, col2 = st.columns(2)
@@ -128,8 +146,10 @@ if st.button("Get Details"):
                 else:
                     st.error("Exchange rate data unavailable")
 
+                # ---- Stock Index ----
                 st.subheader("📈 Major Stock Market Index")
                 st.success(get_stock_index(country))
 
+                # ---- Maps ----
                 st.subheader("📍 Stock Exchange HQ (Google Maps)")
                 st.write(f"https://www.google.com/maps/search/{country}+stock+exchange")
